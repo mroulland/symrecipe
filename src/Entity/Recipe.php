@@ -72,7 +72,7 @@ class Recipe
         $this->updatedAt = new DateTimeImmutable();
     }
 
-    #[ORM\PrePersist]
+    #[ORM\PrePersist()]
     public function setUpdatedAtValue()
     {
         $this->updatedAt = new DateTimeImmutable();
