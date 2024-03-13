@@ -7,10 +7,13 @@ use App\Form\IngredientType;
 use App\Repository\IngredientRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 
 class IngredientController extends AbstractController
 {
@@ -23,6 +26,7 @@ class IngredientController extends AbstractController
      * @return Response
      */
     #[Route('/ingredient', name: 'ingredient.index', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     // Injection de dépendance - permet d'accéder directement à un service
     public function index(IngredientRepository $repository, PaginatorInterface $paginator, Request $request): Response
     {
@@ -45,6 +49,7 @@ class IngredientController extends AbstractController
      * @return Response
      */
     #[Route('/ingredient/nouveau', name:'ingredient.new', methods:['GET','POST'])]
+    #[IsGranted('ROLE_USER')]
     public function new(
         Request $request,
         EntityManagerInterface $manager
@@ -73,6 +78,10 @@ class IngredientController extends AbstractController
         ['form' => $form]);
     }
 
+    #[IsGranted(
+        attribute : new Expression('is_granted("ROLE_USER") and user === subject'), 
+        subject: new Expression('args["ingredient"].getUser()')
+    )]
     #[Route('/ingredient/edition/{id}', 'ingredient.edit', methods:['GET', 'POST'])]
     public function edit (
         Ingredient $ingredient, 
@@ -113,6 +122,10 @@ class IngredientController extends AbstractController
 
     }
 
+    #[IsGranted(
+        attribute : new Expression('is_granted("ROLE_USER") and user === subject'), 
+        subject: new Expression('args["ingredient"].getUser()')
+    )]
     #[Route('/ingredient/suppression/{id}', 'ingredient.delete', methods:['GET'])]
     public function delete(
         Ingredient $ingredient,

@@ -51,6 +51,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotNull()]
     private DateTimeImmutable $createdAt;
 
+    #[ORM\Column(type: 'datetime_immutable')]
+    #[Assert\NotNull()]
+    private \DateTimeImmutable $updatedAt;
+
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Ingredient::class, orphanRemoval: true)]
     private Collection $ingredients;
 
@@ -60,6 +65,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->ingredients = new ArrayCollection();
         $this->recipes = new ArrayCollection();
     }
@@ -185,6 +191,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

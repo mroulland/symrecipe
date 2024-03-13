@@ -7,10 +7,12 @@ use App\Form\RecipeType;
 use App\Repository\RecipeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\ExpressionLanguage\Expression;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class RecipeController extends AbstractController
 {
@@ -21,8 +23,10 @@ class RecipeController extends AbstractController
      * @param PaginatorInterface $paginator
      * @param Request $request
      * @return Response
+     * 
      */
     #[Route('/recette', name: 'recipe.index', methods:['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function index(RecipeRepository $repository,
         PaginatorInterface $paginator,
         Request $request
@@ -47,6 +51,7 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette/nouveau', name:'recipe.new', methods:['GET','POST'])]
+    #[IsGranted('ROLE_USER')]
     public function new(
         Request $request,
         EntityManagerInterface $manager
@@ -86,6 +91,10 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette/edition/{id}', 'recipe.edit', methods:['GET', 'POST'])]
+    #[IsGranted(
+        attribute : new Expression('is_granted("ROLE_USER") and user === subject'), 
+        subject: new Expression('args["recipe"].getUser()')
+    )]
     public function edit (
         Recipe $recipe, 
         Request $request, 
@@ -121,6 +130,10 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette/suppression/{id}', 'recipe.delete', methods:['GET'])]
+    #[IsGranted(
+        attribute : new Expression('is_granted("ROLE_USER") and user === subject'), 
+        subject: new Expression('args["recipe"].getUser()')
+    )]
     public function delete(
         Recipe $recipe,
         EntityManagerInterface $manager
