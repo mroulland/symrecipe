@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SymRecipe - Recettes de la communauté{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Recettes de la communauté</h1>
+
+{% if recipes is defined and recipes.items|length > 0 %}
+    <div class="count mt-4">
+        Il y a {{ recipes.getTotalItemCount }} recettes au total.
+    </div>
+
+    <div class="container row justify-content-center text-center">
+        {% for recipe in recipes %}
+        <div class="card text-white bg-warning m-3" style="max-width: 20rem;">
+            <div class="card-header"><h4 class="card-title">{{recipe.name}}</h4></div>
+            <div class="card-body">
+                {% if recipe.quantity %}
+                    <p>Pour {{recipe.quantity}} personnes</p>
+                {% else %}
+                    <p>Nombre de personne non renseigné</p>
+                {% endif %}
+                {% if recipe.difficulty %}
+                    <p>Difficulté : {{recipe.difficulty}}/5</p>
+                {% else %}
+                    <p>Difficulté non renseigné</p>
+                {% endif %}
+                {% if recipe.time %}
+                    <p>Durée : {{recipe.time}} minutes</p>
+                {% else %}
+                    <p>Durée non renseignée</p>
+                {% endif %}
+                {% if recipe.price %}
+                    <p>Prix : {{recipe.price}} €</p>
+                {% else %}
+                    <p> Prix non renseigné</p>
+                {% endif %}
+                <a href="{{ path('recipe.show', {id : recipe.id}) }}">Voir la recette</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="navigation d-flex justify-content-center mt-4">
+        {{ knp_pagination_render(recipes) }}
+    </div>
+{% else %}
+    <div class="count mt-4">
+        Il n'y a pas de recette dans la liste.
+    </div>
+{% endif %}    
+</div>
+
+{% endblock %}
