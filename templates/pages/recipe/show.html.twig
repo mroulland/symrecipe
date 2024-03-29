@@ -2,14 +2,37 @@
 {% block title %}SymRecipe - {{ recipe.name }} {% endblock %}
 {% block body %}
     <div class="container">
+
         <h1 class="mt-4">{{ recipe.name }}</h1>
         <span class="badge bg-primary">Créée le {{ recipe.createdAt|date('d/m/Y') }}</span>
+        {% for message in app.flashes('success') %}
+        <div class="alert alert-success mt-4">
+            {{ message }}
+        </div>
+        {% endfor %}
         <div class="mt-4">
-        {% if recipe.time %}
-            <p>Temps (en minutes) : {{recipe.time}}</p>
-        {% else %}
-            <p>Temps non renseigné</p>
-        {% endif %}
+            <p class="average">
+                {% for i in 1..5 %}
+                    {% if i == 1 %} 
+                        {% if recipe.average is defined and recipe.average is not empty %} 
+                            {% set average = recipe.average %} 
+                        {% else %} 
+                            {% set average = 0 %} 
+                        {% endif %}
+                    {% endif %}
+
+                    {% if average >= 1 %}<i class="fa-solid fa-star"></i>
+                    {% elseif average > 0 %}<i class="fa-regular fa-star-half-stroke"></i>
+                    {% else %}<i class="fa-regular fa-star"></i>
+                    {% endif %}
+                    {% set average = average - 1 %} 
+                {% endfor %}
+            </p>
+            {% if recipe.time %}
+                <p>Temps (en minutes) : {{recipe.time}}</p>
+            {% else %}
+                <p>Temps non renseigné</p>
+            {% endif %}
         </div>
         <div class="mt-4">
         {% if recipe.quantity %}
@@ -40,6 +63,10 @@
             {% for ingredient in recipe.ingredients %}
                 <span class="badge bg-primary">{{ ingredient.name }}</span>
             {% endfor %}
+        </div>
+
+        <div>
+            {% if form is defined %} {{form(form)}} {% endif %}
         </div>
     </div>
 {% endblock %}

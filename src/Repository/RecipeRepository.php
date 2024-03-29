@@ -21,7 +21,6 @@ class RecipeRepository extends ServiceEntityRepository
         parent::__construct($registry, Recipe::class);
     }
 
-
     /**
      * Ths function allow us to find only public recipe with a limit of recipes
      * if we need to limit
@@ -39,7 +38,7 @@ class RecipeRepository extends ServiceEntityRepository
             if ($nbRecipes !== 0 || $nbRecipes !== null) {
                 $queryBuilder->setMaxResults($nbRecipes);
             }
-            return $queryBuilder->getQuery()
-            ->getResult();
+
+            return $queryBuilder->getQuery()->getResult();
     }
 }

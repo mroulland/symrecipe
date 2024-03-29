@@ -7,7 +7,6 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\PrePersist;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -71,11 +70,17 @@ class Recipe
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: Mark::class, orphanRemoval: true)]
+    private Collection $marks;
+
+    private ?float $average = null;
+
     public function __construct()
     {
         $this->ingredients = new ArrayCollection();
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = new DateTimeImmutable();
+        $this->marks = new ArrayCollection();
     }
 
     #[ORM\PrePersist()]
@@ -249,5 +254,53 @@ class Recipe
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Mark>
+     */
+    public function getMarks(): Collection
+    {
+        return $this->marks;
+    }
+
+    public function addMark(Mark $mark): static
+    {
+        if (!$this->marks->contains($mark)) {
+            $this->marks->add($mark);
+            $mark->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMark(Mark $mark): static
+    {
+        if ($this->marks->removeElement($mark)) {
+            // set the owning side to null (unless already changed)
+            if ($mark->getRecipe() === $this) {
+                $mark->setRecipe($this);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Get the value of average
+     */ 
+    public function getAverage()
+    {
+        $marks = $this->marks;
+        if($marks->toArray() === []){
+            $this->average = null;
+        }
+        $total = 0;
+        foreach($marks as $mark){
+            $total += $mark->getMark();
+        }
+
+        $this->average = round($total / count($this->marks), 1);
+
+        return $this->average;
     }
 }

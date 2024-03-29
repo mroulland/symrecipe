@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Mark;
 use App\Entity\Recipe;
+use App\Form\MarkType;
 use App\Form\RecipeType;
+use App\Repository\MarkRepository;
 use App\Repository\RecipeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -52,6 +55,7 @@ class RecipeController extends AbstractController
             $request->query->getInt('page', 1),
             10
         );
+
         return $this->render('pages/recipe/index_public.html.twig', [
             'recipes' => $recipes
         ]);
@@ -67,13 +71,40 @@ class RecipeController extends AbstractController
         attribute : new Expression('is_granted("ROLE_USER") and subject === true'), 
         subject: new Expression('args["recipe"].getIsPublic()')
     )]
-    #[Route('/recette/{id}', name: 'recipe.show', methods:['GET'])]
-    public function show(Recipe $recipe) : Response
+    #[Route('/recette/{id}', name: 'recipe.show', methods:['GET', 'POST'])]
+    public function show(Recipe $recipe, 
+        Request $request, 
+        EntityManagerInterface $manager, 
+        MarkRepository $markRepository) : Response
     {
+        $params['recipe'] = $recipe;
 
-        return $this->render('pages/recipe/show.html.twig', [
-            'recipe' => $recipe
-        ]);
+        $existingMark = $markRepository->findOneBy(['user' => $this->getUser(), 'recipe' => $recipe]);
+
+        //dd($existingMark);
+        if(!$existingMark){
+            $mark = new Mark();
+            $form = $this->createForm(MarkType::class, $mark);
+            
+            $form->handleRequest($request);
+    
+            if($form->isSubmitted() && $form->isValid()){
+                $mark = $form->getData();
+                $mark->setUser($this->getUser());
+                $mark->setRecipe($recipe);
+                $manager->persist($mark);
+                $manager->flush();
+    
+                $this->addFlash(
+                    'success',
+                    'Votre note a bien été enregistrée !'
+                );
+                return $this->redirectToRoute('recipe.show', ['id'=>$recipe->getId()]);
+            }
+            $params['form'] = $form;
+        }
+
+        return $this->render('pages/recipe/show.html.twig', $params);
     }
 
     /**

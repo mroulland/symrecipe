@@ -14,7 +14,7 @@ class Ingredient
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id;
+    private int $id;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank()]
@@ -29,11 +29,11 @@ class Ingredient
 
     #[ORM\Column]
     #[Assert\NotNull()]
-    private ?\DateTimeImmutable $createdAt;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'ingredients')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    private User $user;
 
 
     public function __construct()
