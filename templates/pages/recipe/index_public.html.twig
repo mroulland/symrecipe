@@ -17,14 +17,21 @@
             <div class="card-header"><h4 class="card-title">{{recipe.name}}</h4></div>
             <div class="card-body">
                 <p class="average">
-                    {% for i in 1..5 %}
-                        {% if i == 1 %} {% set average = recipe.average %} {% endif %}
-                        {% if average >= 1 %}<i class="fa-solid fa-star"></i>
-                        {% elseif average > 0 %}<i class="fa-regular fa-star-half-stroke"></i>
-                        {% else %}<i class="fa-regular fa-star"></i>
+                {% for i in 1..5 %}
+                    {% if i == 1 %} 
+                        {% if recipe.average is defined and recipe.average is not null %} 
+                            {% set average = recipe.average %} 
+                        {% else %} 
+                            {% set average = 0 %} 
                         {% endif %}
-                        {% set average = average - 1 %} 
-                    {% endfor %}
+                    {% endif %}
+
+                    {% if average >= 1 %}<i class="fa-solid fa-star"></i>
+                    {% elseif average > 0 %}<i class="fa-regular fa-star-half-stroke"></i>
+                    {% else %}<i class="fa-regular fa-star"></i>
+                    {% endif %}
+                    {% set average = average - 1 %} 
+                {% endfor %}
                 </p>
                 {% if recipe.quantity %}
                     <p>Pour {{recipe.quantity}} personnes</p>

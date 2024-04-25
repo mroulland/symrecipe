@@ -57,7 +57,7 @@ class AppFixtures extends Fixture
             $recipe = new Recipe;
             $recipe->setName('Recipe #'.$j)
                 ->setTime(mt_rand(0, 1) == 1 ? mt_rand(1, 1440) : null)
-                ->setQuantity(mt_rand(0, 1) == 1 ? mt_rand(1, 50) : null)
+                ->setQuantity(mt_rand(0, 1) == 1 ? mt_rand(1, 10) : null)
                 ->setDifficulty(mt_rand(0, 1) == 1 ? mt_rand(1, 5) : null)
                 ->setDescription($this->faker->text(300))
                 ->setPrice(mt_rand(0, 1) == 1 ? mt_rand(1, 1000) : null)

@@ -46,7 +46,7 @@ class RecipeController extends AbstractController
         ]);
     }
     
-    #[Route('/recettes/publique', name: 'recipe.index.public', methods:['GET'])]
+    #[Route('/recettes/communauté', name: 'recipe.community', methods:['GET'])]
     public function indexPublic(RecipeRepository $repository, PaginatorInterface $paginator, Request $request) : Response
     {
 
@@ -61,52 +61,7 @@ class RecipeController extends AbstractController
         ]);
     }
 
-    /**
-     * This controller allow us to see a recipe if it's public
-     *
-     * @param Recipe $recipe
-     * @return Response
-     */
-    #[IsGranted(
-        attribute : new Expression('is_granted("ROLE_USER") and subject === true'), 
-        subject: new Expression('args["recipe"].getIsPublic()')
-    )]
-    #[Route('/recette/{id}', name: 'recipe.show', methods:['GET', 'POST'])]
-    public function show(Recipe $recipe, 
-        Request $request, 
-        EntityManagerInterface $manager, 
-        MarkRepository $markRepository) : Response
-    {
-        $params['recipe'] = $recipe;
-
-        $existingMark = $markRepository->findOneBy(['user' => $this->getUser(), 'recipe' => $recipe]);
-
-        //dd($existingMark);
-        if(!$existingMark){
-            $mark = new Mark();
-            $form = $this->createForm(MarkType::class, $mark);
-            
-            $form->handleRequest($request);
     
-            if($form->isSubmitted() && $form->isValid()){
-                $mark = $form->getData();
-                $mark->setUser($this->getUser());
-                $mark->setRecipe($recipe);
-                $manager->persist($mark);
-                $manager->flush();
-    
-                $this->addFlash(
-                    'success',
-                    'Votre note a bien été enregistrée !'
-                );
-                return $this->redirectToRoute('recipe.show', ['id'=>$recipe->getId()]);
-            }
-            $params['form'] = $form;
-        }
-
-        return $this->render('pages/recipe/show.html.twig', $params);
-    }
-
     /**
      * This controller display form to create a recipe
      *
@@ -121,7 +76,6 @@ class RecipeController extends AbstractController
         EntityManagerInterface $manager
         ) : Response
     {
-
         $recipe = new Recipe();
         $form = $this->createForm(RecipeType::class, $recipe);
         
@@ -211,4 +165,50 @@ class RecipeController extends AbstractController
 
         return $this->redirectToRoute('recipe.index');
     }
+
+    /**
+     * This controller allow us to see a recipe if it's public
+     *
+     * @param Recipe $recipe
+     * @return Response
+     */
+    #[IsGranted(
+        attribute : new Expression('is_granted("ROLE_USER") and subject === true'), 
+        subject: new Expression('args["recipe"].getIsPublic() || args["recipe"].getUser()')
+    )]
+    #[Route('/recette/{id}', name: 'recipe.show', methods:['GET', 'POST'])]
+    public function show(Recipe $recipe, 
+        Request $request, 
+        EntityManagerInterface $manager, 
+        MarkRepository $markRepository) : Response
+    {
+        $params['recipe'] = $recipe;
+
+        $existingMark = $markRepository->findOneBy(['user' => $this->getUser(), 'recipe' => $recipe]);
+
+        if(!$existingMark){
+            $mark = new Mark();
+            $form = $this->createForm(MarkType::class, $mark);
+            
+            $form->handleRequest($request);
+    
+            if($form->isSubmitted() && $form->isValid()){
+                $mark = $form->getData();
+                $mark->setUser($this->getUser());
+                $mark->setRecipe($recipe);
+                $manager->persist($mark);
+                $manager->flush();
+    
+                $this->addFlash(
+                    'success',
+                    'Votre note a bien été enregistrée !'
+                );
+                return $this->redirectToRoute('recipe.show', ['id'=>$recipe->getId()]);
+            }
+            $params['form'] = $form;
+        }
+
+        return $this->render('pages/recipe/show.html.twig', $params);
+    }
+
 }
